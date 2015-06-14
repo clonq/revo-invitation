@@ -2,20 +2,32 @@ module.exports = function(){
     var _ = require('underscore');
 
     this.init = function(config) {
-        var that = this;
+        var self = this;
         this.params = _.defaults(config||{}, defaults)
-        process.on('user:register.response', function(pin){
-            console.log('todo: clonq/revo-invitation: ', pin);
+        process.on('invitation:process', function(pin){
+            console.log('invitation:process: ', pin);
+            if(pin.code) {
+                var action = self.params.for[pin.code];
+                if(!!action) {
+                    process.once('user:find.by.email.'+pin.email+'.response', function(foundUser){
+                        if(action.emit) {
+                            var payload = _.defaults(foundUser, action.payload);
+                            process.emit(action.emit, payload);
+                        }
+
+                    })
+                    process.emit('user:find', { by:'email', email: pin.email});
+                }
+            }
         })
     }
 
 }
 
 var defaults = module.exports.defaults = {
-    listen: 'user:register.response',
     models: {
         invitation: {
-            // supportedMethods: ['register']
+            supportedMethods: ['process']
         }
     }
 }
