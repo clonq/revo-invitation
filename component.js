@@ -11,12 +11,18 @@ module.exports = function(){
                 if(!!action) {
                     process.once('user:find.by.email.'+pin.email+'.response', function(foundUser){
                         if(action.emit) {
-                            var payload = _.defaults(foundUser, action.payload);
+                            var payload = _.mapObject(action.payload, function(val, key){
+                                if(/^<%(.*)%>$/.test(val)) {
+                                    val = /^<%(.*)%>$/.exec(val)[1];
+                                    if(foundUser[val]) val = foundUser[val].replace(/\-/g, '');
+                                }
+                                return val;
+                            });
+                            payload = _.defaults(foundUser, payload);
                             process.emit(action.emit, payload);
                         }
-
-                    })
-                    process.emit('user:find', { by:'email', email: pin.email});
+                    });
+                    process.emit('user:findOne', { email: pin.email });
                 }
             }
         })
