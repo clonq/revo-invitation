@@ -14,7 +14,7 @@ module.exports = function(){
                             var payload = _.mapObject(action.payload, function(val, key){
                                 if(/^<%(.*)%>$/.test(val)) {
                                     val = /^<%(.*)%>$/.exec(val)[1];
-                                    if(foundUser[val]) val = foundUser[val].replace(/\-/g, '');
+                                    if(foundUser[val]) val = foundUser[val];
                                 }
                                 return val;
                             });
